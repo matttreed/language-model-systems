@@ -1,0 +1,23 @@
+from cs336_systems.configs.config import Systems_Config
+from cs336_systems.benchmarking.benchmarking import benchmark_transformer
+import torch
+
+import argparse
+
+def main():
+    parser = argparse.ArgumentParser(description='Train a model with float16 parameters.')
+    parser.add_argument('--version', type=str, default=None, help='Version Number of Model')
+    parser.add_argument('--num_warmup', type=int, default=1, help='Num Warmups')
+    parser.add_argument('--num_exp', type=int, default=10, help='Num Warmups')
+    args = parser.parse_args()
+
+    config = Systems_Config(version=args.version)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    benchmark_transformer(config, device, args.num_warmup, args.num_exp)
+
+
+if __name__ == "__main__":
+
+    main()
