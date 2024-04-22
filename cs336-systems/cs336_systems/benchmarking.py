@@ -6,7 +6,7 @@ import torch
 import time
 import timeit
 
-def benchmark_transformer_mixed(version, device, num_warmup: int, num_exp: int):
+def benchmark_transformer_mixed(version, device, num_warmup: int, num_exp: int, forward_only: bool):
 
     config = Systems_Config(version)
     
@@ -37,8 +37,11 @@ def benchmark_transformer_mixed(version, device, num_warmup: int, num_exp: int):
         with autocast():
             y = model(x)
 
-        if "cuda" in device.type:
-            torch.cuda.synchronize()
+            if not forward_only:
+                y.sum().backward()
+
+            if "cuda" in device.type:
+                torch.cuda.synchronize()
 
         end = time.time()
         times.append(end - start)
@@ -75,6 +78,9 @@ def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forwar
         x, _ = get_random_batch(config, device)
         start = timeit.default_timer()
         y = model(x)
+
+        if not forward_only:
+            y.sum().backward()
 
         if "cuda" in device.type:
             torch.cuda.synchronize()

@@ -12,6 +12,7 @@ def main():
     parser.add_argument('--profile', action='store_true', help='Profile Transformer')
     parser.add_argument('--num_warmup', type=int, default=1, help='Num Warmups')
     parser.add_argument('--num_exp', type=int, default=10, help='Num Warmups')
+    parser.add_argument('--forward_only', action='store_true', help='Only time forward pass')
     args = parser.parse_args()
 
     # config = Systems_Config(version=args.version)
@@ -22,7 +23,7 @@ def main():
         profile_transformer(args.version, device, args.num_warmup, args.num_exp)
 
     if args.benchmark:
-        benchmark_transformer(args.version, device, args.num_warmup, args.num_exp)
+        benchmark_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only)
 
 
 if __name__ == "__main__":
