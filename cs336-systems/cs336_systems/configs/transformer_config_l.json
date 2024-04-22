@@ -1,0 +1,12 @@
+{
+    "d_model": 1280,
+    "num_heads": 20,
+    "num_layers": 36,
+    "d_ff": 5120,
+    "attn_pdrop": 0.1,
+    "residual_pdrop": 0.1,
+    "context_length": 128,
+    "vocab_size": 10000,
+    "batch_size": 16,
+    "random_seed": 42
+}
