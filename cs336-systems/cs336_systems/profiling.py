@@ -6,6 +6,7 @@ from torch.profiler import profile, record_function, ProfilerActivity
 from cs336_systems.util import get_random_batch
 import torch
 import time
+import os
 
 def profile_transformer(version, device, num_warmup: int, num_exp: int):
 
