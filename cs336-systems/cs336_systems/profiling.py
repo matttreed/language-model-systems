@@ -71,7 +71,7 @@ def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_
             prof.step()
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    export_path = os.path.join(current_dir, f'lm_profiler_stacks_{version}.txt')
+    export_path = os.path.join(current_dir, f'stacks/lm_profiler_stacks_{version}.txt')
 
     prof.export_stacks(export_path, "self_cuda_time_total")
-    print(prof.key_averages().table(sort_by="cpu_time_total", row_limit=50))
+    print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=50))
