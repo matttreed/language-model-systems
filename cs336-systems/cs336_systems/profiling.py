@@ -8,7 +8,7 @@ import torch
 import time
 import os
 
-def profile_transformer(version, device, num_warmup: int, num_exp: int):
+def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool):
 
     config = Systems_Config(version)
     
@@ -56,12 +56,14 @@ def profile_transformer(version, device, num_warmup: int, num_exp: int):
             with record_function('forward_pass'):
                 y_hat = model(x)
 
-            with record_function('backward_pass'):
-                loss = crossEntropyLoss(y, y_hat).mean()
-                loss.backward()
+            if not forward_only:
 
-            with record_function('optimizer'):
-                optimizer.step()      
+                with record_function('backward_pass'):
+                    loss = crossEntropyLoss(y, y_hat).mean()
+                    loss.backward()
+
+                with record_function('optimizer'):
+                    optimizer.step()      
 
             if "cuda" in device.type:
                 torch.cuda.synchronize()

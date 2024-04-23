@@ -20,7 +20,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if args.profile:
-        profile_transformer(args.version, device, args.num_warmup, args.num_exp)
+        profile_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only)
 
     if args.benchmark:
         benchmark_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only)
