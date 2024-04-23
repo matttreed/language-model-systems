@@ -72,22 +72,44 @@ def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forwar
         if "cuda" in device.type:
             torch.cuda.synchronize()
 
-    times = []
+    forward_times = []
+    backward_times = []
+    total_times = []
 
     for _ in range(num_exp):
         x, _ = get_random_batch(config, device)
         start = timeit.default_timer()
         y = model(x)
 
-        if not forward_only:
-            y.sum().backward()
 
         if "cuda" in device.type:
             torch.cuda.synchronize()
-
+        
         end = timeit.default_timer()
-        times.append(end - start)
+        forward_times.append(end - start)
 
-    print("Times:", times)
-    print(f"Average time: {sum(times) / len(times)}")
-    print(f"Standard deviation: {sum((t - sum(times) / len(times)) ** 2 for t in times) / len(times)}")
+        if not forward_only:
+            start = end
+            y.sum().backward()
+
+            if "cuda" in device.type:
+                torch.cuda.synchronize()
+
+            end = timeit.default_timer()
+            backward_times.append(end - start)
+
+            total_times.append(forward_times[-1] + backward_times[-1])
+        else:
+            total_times.append(forward_times[-1])
+
+    print("Total Times:", total_times)
+    print(f"Average time: {sum(total_times) / len(total_times)}")
+    print(f"Standard deviation: {sum((t - sum(total_times) / len(total_times)) ** 2 for t in total_times) / len(total_times)}")
+
+    print("Forward Pass Times:", forward_times)
+    print(f"Average time: {sum(forward_times) / len(forward_times)}")
+    print(f"Standard deviation: {sum((t - sum(forward_times) / len(forward_times)) ** 2 for t in forward_times) / len(forward_times)}")
+
+    print("Backward Pass Times:", backward_times)
+    print(f"Average time: {sum(backward_times) / len(backward_times)}")
+    print(f"Standard deviation: {sum((t - sum(backward_times) / len(backward_times)) ** 2 for t in backward_times) / len(backward_times)}")
