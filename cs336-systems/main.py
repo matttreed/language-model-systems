@@ -24,7 +24,7 @@ def main():
         profile_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only, use_mixed_precision=args.mixed)
 
     if args.benchmark:
-        benchmark_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only)
+        benchmark_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only, use_mixed_precision=args.mixed)
 
 
 if __name__ == "__main__":
