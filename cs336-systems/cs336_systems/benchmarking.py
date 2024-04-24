@@ -7,7 +7,7 @@ import time
 import timeit
 from contextlib import nullcontext
 
-def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool, use_mixed_precision: bool = False):
+def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool, use_mixed_precision: bool = False, use_layer_norm: bool = False):
 
     config = Systems_Config(version)
     
@@ -19,7 +19,8 @@ def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forwar
         d_ff=config.d_ff,
         attn_pdrop=config.attn_pdrop,
         residual_pdrop=config.residual_pdrop,
-        context_length=config.context_length
+        context_length=config.context_length,
+        use_layer_norm=use_layer_norm
     ).to(device)
 
     context = torch.cuda.amp.autocast if use_mixed_precision else nullcontext

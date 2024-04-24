@@ -90,17 +90,18 @@ class MultiHeadAttention(nn.Module):
 
 
 class TransformerBlock(nn.Module):
-    def __init__(self, d_model, num_heads, d_ff, residual_pdrop=0, attn_pdrop=0):
+    def __init__(self, d_model, num_heads, d_ff, residual_pdrop=0, attn_pdrop=0, use_layer_norm=False):
         super(TransformerBlock, self).__init__()
         self.d_model = d_model
         self.num_heads = num_heads
         self.d_ff = d_ff
         self.residual_pdrop = residual_pdrop
         self.attn_pdrop = attn_pdrop
+        self.use_layer_norm = use_layer_norm
 
-        self.rms_norm_1 = RMSNorm(d_model)
+        self.rms_norm_1 = RMSNorm(d_model) if not use_layer_norm else nn.LayerNorm(d_model)
         self.multi_head_attention = MultiHeadAttention(d_model, num_heads, attn_pdrop)
-        self.rms_norm_2 = RMSNorm(d_model)
+        self.rms_norm_2 = RMSNorm(d_model) if not use_layer_norm else nn.LayerNorm(d_model)
         self.feed_forward = PositionWiseFeedForward(d_model, d_ff)
 
     def forward(self, x):

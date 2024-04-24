@@ -4,7 +4,7 @@ import torch.nn as nn
 from cs336_basics.model.layers import TransformerBlock, RMSNorm, RoPEEmbedding
 
 class Transformer(nn.Module):
-    def __init__(self, vocab_size, context_length, num_layers, d_model, num_heads, d_ff, attn_pdrop, residual_pdrop):
+    def __init__(self, vocab_size, context_length, num_layers, d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, use_layer_norm=False):
         super(Transformer, self).__init__()
         self.vocab_size = vocab_size
         self.context_length = context_length
@@ -15,15 +15,16 @@ class Transformer(nn.Module):
         self.attn_pdrop = attn_pdrop
         self.residual_pdrop = residual_pdrop
         self.positional_embeddings = nn.Embedding(context_length, d_model)
+        self.use_layer_norm = use_layer_norm
 
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         self.blocks = nn.ModuleList(
             [
-                TransformerBlock(d_model, num_heads, d_ff, attn_pdrop, residual_pdrop)
+                TransformerBlock(d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, use_layer_norm=use_layer_norm)
                 for _ in range(num_layers)
             ]
         )
-        self.output_norm = RMSNorm(d_model)
+        self.output_norm = RMSNorm(d_model) if not use_layer_norm else nn.LayerNorm(d_model)
         self.output_proj = nn.Linear(d_model, vocab_size, bias=False)
         # self.softmax = nn.Softmax(dim=-1)
 
