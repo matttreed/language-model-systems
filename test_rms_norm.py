@@ -11,12 +11,12 @@ def main():
 
         input_shape = (num_rows, last_dim)
         x = torch.randn(input_shape).to("cuda")
-        w = torch.randn(last_dim)
-        bias = torch.randn(last_dim)
+        w = torch.randn(last_dim).to("cuda")
+        bias = torch.randn(last_dim).to("cuda")
 
-        rmsnorm = layers.RMSNorm(last_dim)
+        rmsnorm = layers.RMSNorm(last_dim).to("cuda")
         rmsnorm.weight.data = w
-        layernorm = torch.nn.LayerNorm(last_dim)
+        layernorm = torch.nn.LayerNorm(last_dim).to("cuda")
         layernorm.weight.data = w
         layernorm.bias.data = bias
 
