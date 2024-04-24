@@ -52,7 +52,7 @@ def weighted_sum_backward(grad_output_ptr : tl.pointer_type,
     grad_weight_row = row * grad_output # (See Eq 3)
     tl.store(partial_grad_weight_ptr, grad_weight_row, mask=mask)
 
-class WeightedSumFunc(torch.autograd.Function):
+class WeightedSumFunc_Triton(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x, weight):
         # Remember x and weight for the backward pass, when we
@@ -142,7 +142,7 @@ def rms_norm_backward(grad_output_ptr : tl.pointer_type,
     grad_weight_row = row * grad_output # (See Eq 3)
     tl.store(partial_grad_weight_ptr, grad_weight_row, mask=mask)
 
-class RMS_Norm_Func(torch.autograd.Function):
+class RMS_Norm_Func_Triton(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x, weight):
         # Remember x and weight for the backward pass, when we

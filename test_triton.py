@@ -1,5 +1,5 @@
 import torch
-from cs336_systems.rms_kernel import WeightedSumFunc
+from cs336_systems.triton import WeightedSumFunc
 
 
 def main():
