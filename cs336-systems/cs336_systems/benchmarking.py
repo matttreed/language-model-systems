@@ -66,14 +66,19 @@ def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forwar
         else:
             total_times.append(forward_times[-1])
 
-    # print("Total Times:", total_times)
-    print(f"Average time: {sum(total_times) / len(total_times)}")
-    print(f"Standard deviation: {sum((t - sum(total_times) / len(total_times)) ** 2 for t in total_times) / len(total_times)}")
+    if not forward_only:
+        print("Total Time:")
+        # print("Total Times:", total_times)
+        print(f"Average time: {sum(total_times) / len(total_times)}")
+        print(f"Standard deviation: {sum((t - sum(total_times) / len(total_times)) ** 2 for t in total_times) / len(total_times)}")
 
+    print("Forward Pass Time:")
     # print("Forward Pass Times:", forward_times)
     print(f"Average time: {sum(forward_times) / len(forward_times)}")
     print(f"Standard deviation: {sum((t - sum(forward_times) / len(forward_times)) ** 2 for t in forward_times) / len(forward_times)}")
 
-    # print("Backward Pass Times:", backward_times)
-    print(f"Average time: {sum(backward_times) / len(backward_times)}")
-    print(f"Standard deviation: {sum((t - sum(backward_times) / len(backward_times)) ** 2 for t in backward_times) / len(backward_times)}")
+    if not forward_only:
+        print("Backward Pass Time:")
+        # print("Backward Pass Times:", backward_times)
+        print(f"Average time: {sum(backward_times) / len(backward_times)}")
+        print(f"Standard deviation: {sum((t - sum(backward_times) / len(backward_times)) ** 2 for t in backward_times) / len(backward_times)}")
