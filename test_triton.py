@@ -6,7 +6,7 @@ from cs336_systems.functions import RMS_Norm_Func_Python
 def main():
     x = torch.randn(8,32,64).cuda()
     w = torch.randn(64).cuda()
-    weighted_sum_func = WeightedSumFunc.apply
+    weighted_sum_func = WeightedSumFunc_Triton.apply
     triton_y = weighted_sum_func(x, w)
     python_y = (w * x).sum(axis=-1)
 
