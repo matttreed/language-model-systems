@@ -1,5 +1,6 @@
 import torch
-from cs336_systems.kernels import WeightedSumFunc
+from cs336_systems.kernels import WeightedSumFunc_Triton, RMS_Norm_Func_Triton
+from cs336_systems.functions import RMS_Norm_Func_Python
 
 
 def main():
