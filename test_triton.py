@@ -11,5 +11,5 @@ def main():
 
     assert torch.allclose(triton_y, python_y), "Output mismatch"
 
-
-main()
+if __name__ == "__main__":
+    main()

@@ -14,40 +14,44 @@ class ToyModel(nn.Module):
         x = self.ln(x)
         x = self.fc2(x)
         return x
-    
-model = ToyModel(5, 3).cuda()
 
-with torch.cuda.amp.autocast():
-    # Input tensor
-    x = torch.randn(2, 5).cuda()
+def main():
+    model = ToyModel(5, 3).cuda()
 
-    # Model parameters
-    params = list(model.parameters())
-    print("Model Parameters:", params)
+    with torch.cuda.amp.autocast():
+        # Input tensor
+        x = torch.randn(2, 5).cuda()
 
-    # Output from the first feed-forward layer
-    fc1_out = model.fc1(x)
-    print("Output of fc1:", fc1_out)
+        # Model parameters
+        params = list(model.parameters())
+        print("Model Parameters:", params)
 
-    # Output from LayerNorm
-    ln_out = model.ln(fc1_out)
-    print("Output of Layer Norm:", ln_out)
+        # Output from the first feed-forward layer
+        fc1_out = model.fc1(x)
+        print("Output of fc1:", fc1_out)
 
-    # Model's predicted logits
-    y = model(x)
-    print("Model's Predicted Logits:", y)
+        # Output from LayerNorm
+        ln_out = model.ln(fc1_out)
+        print("Output of Layer Norm:", ln_out)
 
-    # Define a target and loss function
-    target = torch.tensor([[0, 1, 0], [1, 0, 0]], dtype=torch.float).cuda()
-    loss_fn = nn.MSELoss()
+        # Model's predicted logits
+        y = model(x)
+        print("Model's Predicted Logits:", y)
 
-    # Calculate the loss
-    loss = loss_fn(y, target)
-    print("Loss:", loss)
+        # Define a target and loss function
+        target = torch.tensor([[0, 1, 0], [1, 0, 0]], dtype=torch.float).cuda()
+        loss_fn = nn.MSELoss()
 
-    # Perform backpropagation to get gradients
-    loss.backward()
-    
-    # Retrieve gradients
-    gradients = [param.grad for param in model.parameters()]
-    print("Model's Gradients:", gradients)
+        # Calculate the loss
+        loss = loss_fn(y, target)
+        print("Loss:", loss)
+
+        # Perform backpropagation to get gradients
+        loss.backward()
+        
+        # Retrieve gradients
+        gradients = [param.grad for param in model.parameters()]
+        print("Model's Gradients:", gradients)
+
+if __name__ == "__main__":
+    main()

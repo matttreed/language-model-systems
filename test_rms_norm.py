@@ -46,4 +46,5 @@ def main():
         print(f"LayerNorm Time: {layernorm_time} seconds")
         print()
 
-main()
+if __name__ == "__main__":
+    main()
