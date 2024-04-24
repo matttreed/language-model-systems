@@ -2,6 +2,7 @@ import triton
 import triton.language as tl
 import torch
 
+@triton.jit
 def weighted_sum_fwd(x_ptr : tl.pointer_type,
                      weight_ptr : tl.pointer_type,
                      x_row_stride : tl.uint32,
