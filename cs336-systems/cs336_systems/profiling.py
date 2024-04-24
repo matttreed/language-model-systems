@@ -4,11 +4,12 @@ from cs336_basics.model.util import crossEntropyLoss
 from cs336_systems.config import Systems_Config
 from torch.profiler import profile, record_function, ProfilerActivity
 from cs336_systems.util import get_random_batch
+from contextlib import nullcontext
 import torch
 import time
 import os
 
-def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool):
+def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool, use_mixed_precision: bool = False):
 
     config = Systems_Config(version)
     
@@ -29,6 +30,9 @@ def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_
         weight_decay=config.weight_decay,
         eps=config.eps,
         lr=config.lr)
+    
+    context = torch.cuda.amp.autocast if use_mixed_precision else nullcontext
+    scaler = torch.cuda.amp.GradScaler() if use_mixed_precision else None
 
     for _ in range(num_warmup):
         x, y = get_random_batch(config, device)
@@ -53,17 +57,24 @@ def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_
             optimizer.zero_grad()
 
             x, y = get_random_batch(config, device)
-            with record_function('forward_pass'):
+            with record_function('forward_pass') and context():
                 y_hat = model(x)
 
             if not forward_only:
 
-                with record_function('backward_pass'):
+                with record_function('backward_pass') and context():
                     loss = crossEntropyLoss(y, y_hat).mean()
-                    loss.backward()
+                    if use_mixed_precision:
+                        scaler.scale(loss).backward()
+                    else:
+                        loss.backward()
 
-                with record_function('optimizer'):
-                    optimizer.step()      
+                with record_function('optimizer') and context():
+                    if use_mixed_precision:
+                        scaler.step(optimizer)
+                        scaler.update()
+                    else:
+                        optimizer.step()   
 
             if "cuda" in device.type:
                 torch.cuda.synchronize()

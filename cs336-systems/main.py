@@ -13,6 +13,7 @@ def main():
     parser.add_argument('--num_warmup', type=int, default=1, help='Num Warmups')
     parser.add_argument('--num_exp', type=int, default=5, help='Num Warmups')
     parser.add_argument('--forward_only', action='store_true', help='Only time forward pass')
+    parser.add_argument('--mixed', action='store_true', help='Used Mixed Precision')
     args = parser.parse_args()
 
     # config = Systems_Config(version=args.version)
@@ -20,7 +21,7 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if args.profile:
-        profile_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only)
+        profile_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only, use_mixed_precision=args.mixed)
 
     if args.benchmark:
         benchmark_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only)
