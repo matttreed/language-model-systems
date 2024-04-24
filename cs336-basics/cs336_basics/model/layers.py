@@ -48,7 +48,7 @@ def scaledDotProductAttention(q, k, v, mask=None, pdropout=0):
     d_k = q.size(-1)
     scores = (q @ k.transpose(-1,-2)) / d_k**0.5 # shape (batch_size, ..., seq_len, seq_len)
     if mask is not None:
-        scores = scores.masked_fill(~mask, -1e15) # fill with -inf whereever mask is False
+        scores = scores.masked_fill(~mask, -65504) # fill with -inf whereever mask is False
     # attention = torch.nn.functional.softmax(scores, dim=-1) # shape (batch_size, ..., seq_len, seq_len)
     attention = softmax(scores, dim=-1)
     attention = torch.nn.functional.dropout(attention, pdropout)
