@@ -1,5 +1,4 @@
 import torch
-from cs336_basics.model.layers import RMSNorm
 
 class RMS_Norm_Func_Python(torch.autograd.Function):
     @staticmethod
