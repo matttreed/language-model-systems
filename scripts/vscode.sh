@@ -7,6 +7,5 @@
 #SBATCH --output=scripts/logs/vscode_%j.out
 #SBATCH --error=scripts/logs/vscode_%j.err
 #SBATCH --mem=10G
-#SBATCH --nodelist=ad12a3ca-01
 
 --nodelist=ad12a3ca-01
