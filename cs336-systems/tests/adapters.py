@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Type
 from cs336_systems.kernels import RMS_Norm_Func_Triton
-from cs336_systems.functions import RMS_Norm_Func_Python
+from cs336_systems.functions import RMS_Norm_Func_Python, rmsnorm_jvp_g, rmsnorm_jvp_x
 
 import torch
 
@@ -55,7 +55,7 @@ def rmsnorm_backward_g_pytorch(
     Returns:
         Gradient of the loss with respect to g. Shape: (H,)
     """
-    raise NotImplementedError
+    return rmsnorm_jvp_g(grad_output, x, g)
 
 
 def rmsnorm_backward_x_pytorch(
@@ -76,7 +76,7 @@ def rmsnorm_backward_x_pytorch(
     Returns:
         Gradient of the loss with respect to x. Shape: (*, H)
     """
-    raise NotImplementedError
+    return rmsnorm_jvp_x(grad_output, x, g)
 
 
 def get_ddp_individual_parameters(module: torch.nn.Module) -> torch.nn.Module:

@@ -1,5 +1,11 @@
 import torch
 
+def rmsnorm_jvp_g(dL_drms, x, g):
+    return g
+
+def rmsnorm_jvp_x(dL_drms, x, g):
+    return x
+
 class RMS_Norm_Func_Python(torch.autograd.Function):
     @staticmethod
     def forward(ctx, x, weight):
@@ -27,4 +33,4 @@ class RMS_Norm_Func_Python(torch.autograd.Function):
         # Gradient with respect to weight
         grad_weight = torch.sum(grad_out * (x / rms_norm), dim=0)
 
-        return grad_x, grad_weight
+        return rmsnorm_jvp_x(grad_out, x, weight), rmsnorm_jvp_g(grad_out, x, weight)
