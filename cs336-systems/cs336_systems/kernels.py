@@ -1,6 +1,7 @@
 import triton
 import triton.language as tl
 import torch
+import os
 
 @triton.jit
 def weighted_sum_fwd(x_ptr : tl.pointer_type,
@@ -92,30 +93,32 @@ class WeightedSumFunc_Triton(torch.autograd.Function):
 
 
 
-
+@triton.jit
 def rms_norm_fwd(x_ptr : tl.pointer_type,
                      weight_ptr : tl.pointer_type,
                      x_row_stride : tl.uint32,
                      output_ptr : tl.pointer_type,
                      H : tl.uint32,
                      BLOCK_SIZE: tl.constexpr):
-    # Each instance will compute the weighted sum of a row of x.
     row_idx = tl.program_id(0)
-    # Pointer to the first entry of the row this instance sums up.
     row_start_ptr = x_ptr + row_idx * x_row_stride
     offsets = tl.arange(0, BLOCK_SIZE)
-    # Pointers to the entries we'll sum up.
-    x_ptrs = row_start_ptr + offsets
-    weight_ptrs = weight_ptr + offsets
-    # Load the data from x given the pointers to its entries,
-    # using a mask since BLOCK_SIZE may be > H.
     mask = offsets < H
-    row = tl.load(x_ptrs, mask=mask, other=0)
-    weight = tl.load(weight_ptrs, mask=mask, other=0)
-    output = tl.sum(row * weight)
-    # Write back output (a single scalar per instance).
-    output_ptr = output_ptr + row_idx
-    tl.store(output_ptr, output)
+
+    # Load input row and gain
+    x_row = tl.load(row_start_ptr + offsets, mask=mask, other=0)
+    gain = tl.load(weight_ptr + offsets, mask=mask, other=1)
+
+    # Compute RMS
+    squared_sum = tl.sum(x_row ** 2, mask=mask)
+    rms = tl.sqrt(squared_sum / H)
+
+    # Normalize and apply gain
+    normalized_row = x_row / rms
+    scaled_row = normalized_row * gain
+
+    # Store the result in the output
+    tl.store(output_ptr + row_idx * x_row_stride + offsets, scaled_row, mask=mask)
 
 @triton.jit
 def rms_norm_backward(grad_output_ptr : tl.pointer_type,
@@ -127,20 +130,40 @@ def rms_norm_backward(grad_output_ptr : tl.pointer_type,
                           H : tl.uint32,
                           BLOCK_SIZE: tl.constexpr):
     row_idx = tl.program_id(0)
-    row_start_ptr = x_ptr + row_idx * x_row_stride
     offsets = tl.arange(0, BLOCK_SIZE)
-    x_ptrs = row_start_ptr + offsets
-    grad_output_ptrs = weight_ptr + offsets
     mask = offsets < H
-    weight = tl.load(weight_ptr + offsets, mask=mask, other=0)
-    grad_output = tl.load(grad_output_ptr + row_idx) # (scalar)
-    grad_x_row = grad_output * weight # (See Eq 4)
-    grad_x_ptr = grad_x_ptr + row_idx * x_row_stride
-    tl.store(grad_x_ptr + offsets, grad_x_row, mask=mask)
-    partial_grad_weight_ptr = partial_grad_weight_ptr + row_idx * x_row_stride + offsets
-    row = tl.load(row_start_ptr + offsets, mask=mask, other=0)
-    grad_weight_row = row * grad_output # (See Eq 3)
-    tl.store(partial_grad_weight_ptr, grad_weight_row, mask=mask)
+
+    grad_output_row = tl.load(grad_output_ptr + row_idx * x_row_stride + offsets, mask=mask, other=0)
+    x_row = tl.load(x_ptr + row_idx * x_row_stride + offsets, mask=mask, other=0)
+    gain_row = tl.load(weight_ptr + offsets, mask=mask, other=1)
+
+    # Compute RMS
+    squared_sum = tl.sum(x_row ** 2, mask=mask)
+    rms = tl.sqrt(squared_sum / H)
+
+    # Gradient with respect to input (grad_x)
+    normalized_row = x_row / rms
+    grad_x_row = grad_output_row * gain_row * (1 - normalized_row) / rms
+    tl.store(grad_x_ptr + row_idx * x_row_stride + offsets, grad_x_row, mask=mask)
+
+    # Gradient with respect to gain (grad_gain)
+    grad_gain_row = grad_output_row * normalized_row
+    tl.store(partial_grad_weight_ptr + offsets, grad_gain_row, mask=mask)
+    # row_idx = tl.program_id(0)
+    # row_start_ptr = x_ptr + row_idx * x_row_stride
+    # offsets = tl.arange(0, BLOCK_SIZE)
+    # x_ptrs = row_start_ptr + offsets
+    # grad_output_ptrs = weight_ptr + offsets
+    # mask = offsets < H
+    # weight = tl.load(weight_ptr + offsets, mask=mask, other=0)
+    # grad_output = tl.load(grad_output_ptr + row_idx) # (scalar)
+    # grad_x_row = grad_output * weight # (See Eq 4)
+    # grad_x_ptr = grad_x_ptr + row_idx * x_row_stride
+    # tl.store(grad_x_ptr + offsets, grad_x_row, mask=mask)
+    # partial_grad_weight_ptr = partial_grad_weight_ptr + row_idx * x_row_stride + offsets
+    # row = tl.load(row_start_ptr + offsets, mask=mask, other=0)
+    # grad_weight_row = row * grad_output # (See Eq 3)
+    # tl.store(partial_grad_weight_ptr, grad_weight_row, mask=mask)
 
 class RMS_Norm_Func_Triton(torch.autograd.Function):
     @staticmethod
@@ -169,3 +192,19 @@ class RMS_Norm_Func_Triton(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_out):
         raise NotImplementedError
+    
+def main():
+    x = torch.randn(4,2,3).cuda()
+    w = torch.randn(3).cuda()
+    weighted_sum_func = WeightedSumFunc_Triton.apply
+    triton_y = weighted_sum_func(x, w)
+    python_y = (w * x).sum(axis=-1)
+
+    print("TRITON: ", triton_y)
+    print("PYTHON: ", python_y)
+
+    assert torch.allclose(triton_y, python_y), "Output mismatch"
+
+if __name__ == "__main__":
+    os.environ["TRITON_INTERPRET"] = "1"
+    main()
