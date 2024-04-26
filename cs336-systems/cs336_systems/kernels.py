@@ -98,13 +98,13 @@ def rms_norm_fwd(x_ptr : tl.pointer_type,
                      weight_ptr : tl.pointer_type,
                      x_row_stride : tl.uint32,
                      output_ptr : tl.pointer_type,
-                     N : tl.uint32,
+                     H : tl.uint32,
                      eps: tl.float32,
                      BLOCK_SIZE: tl.constexpr):
     row_idx = tl.program_id(0)
     row_start_ptr = x_ptr + row_idx * x_row_stride
     offsets = tl.arange(0, BLOCK_SIZE)
-    mask = offsets < N
+    mask = offsets < H
 
     # Load input row and gain
     x_row = tl.load(row_start_ptr + offsets, mask=mask, other=0)
@@ -112,7 +112,7 @@ def rms_norm_fwd(x_ptr : tl.pointer_type,
 
     # Compute RMS
     squared_row =  x_row * x_row
-    squared_mean = tl.sum(squared_row) / N
+    squared_mean = tl.sum(squared_row) / H
     rms = tl.sqrt(squared_mean + eps)
 
     # Normalize and apply gain
@@ -130,6 +130,7 @@ def rms_norm_backward(grad_output_ptr : tl.pointer_type,
                           weight_ptr : tl.pointer_type,
                           x_row_stride : tl.uint32,
                           H : tl.uint32,
+                          eps: tl.float32,
                           BLOCK_SIZE: tl.constexpr):
     row_idx = tl.program_id(0)
     offsets = tl.arange(0, BLOCK_SIZE)
@@ -140,17 +141,18 @@ def rms_norm_backward(grad_output_ptr : tl.pointer_type,
     gain_row = tl.load(weight_ptr + offsets, mask=mask, other=1)
 
     # Compute RMS
-    squared_sum = tl.sum(x_row ** 2, mask=mask)
-    rms = tl.sqrt(squared_sum / H)
+    squared_row =  x_row * x_row
+    squared_mean = tl.sum(squared_row) / H
+    rms = tl.sqrt(squared_mean + eps)
 
     # Gradient with respect to input (grad_x)
     normalized_row = x_row / rms
-    grad_x_row = grad_output_row * gain_row * (1 - normalized_row) / rms
-    tl.store(grad_x_ptr + row_idx * x_row_stride + offsets, grad_x_row, mask=mask)
+    # grad_x_row = grad_output_row * gain_row * (1 - normalized_row) / rms
+    # tl.store(grad_x_ptr + row_idx * x_row_stride + offsets, grad_x_row, mask=mask)
 
     # Gradient with respect to gain (grad_gain)
     grad_gain_row = grad_output_row * normalized_row
-    tl.store(partial_grad_weight_ptr + offsets, grad_gain_row, mask=mask)
+    tl.store(partial_grad_weight_ptr + row_idx * x_row_stride + offsets, grad_gain_row, mask=mask)
     # row_idx = tl.program_id(0)
     # row_start_ptr = x_ptr + row_idx * x_row_stride
     # offsets = tl.arange(0, BLOCK_SIZE)
@@ -175,43 +177,41 @@ class RMS_Norm_Func_Triton(torch.autograd.Function):
         # need to compute the gradients wrt. x and weight.
         ctx.save_for_backward(x, weight)
 
-        N = x.shape[-1]
-        n_rows = x.numel() // N  # Flatten other dimensions
-        x_reshaped = x.reshape(n_rows, N)
+        H = x.shape[-1]
+        n_rows = x.numel() // H  # Flatten other dimensions
+        x_reshaped = x.reshape(n_rows, H)
 
-        assert len(weight.shape) == 1 and weight.shape[0] == N, "Dimension mismatch"
+        assert len(weight.shape) == 1 and weight.shape[0] == H, "Dimension mismatch"
         assert x.is_cuda and weight.is_cuda, "Expected CUDA tensors"
         assert x.is_contiguous(), "Our pointer arithmetic will assume contiguous x"
 
         
 
-        ctx.BLOCK_SIZE = triton.next_power_of_2(N)
+        ctx.BLOCK_SIZE = triton.next_power_of_2(H)
 
-        y_reshaped = torch.empty((n_rows, N), device=x.device)
+        y_reshaped = torch.empty((n_rows, H), device=x.device)
 
         # Launch our kernel with n instances in our 1D grid.
         rms_norm_fwd[(n_rows, )](
-            x, weight, x_reshaped.stride(0), y_reshaped, N, eps=1e-9,
+            x, weight, x_reshaped.stride(0), y_reshaped, H, eps=1e-9,
             num_warps=16, BLOCK_SIZE=ctx.BLOCK_SIZE)
         y = y_reshaped.view(x.shape)
         return y
 
     @staticmethod
     def backward(ctx, grad_out):
-        raise NotImplementedError
-    
-def main():
-    x = torch.randn(4,2,3).cuda()
-    w = torch.randn(3).cuda()
-    weighted_sum_func = WeightedSumFunc_Triton.apply
-    triton_y = weighted_sum_func(x, w)
-    python_y = (w * x).sum(axis=-1)
+        x, weight = ctx.saved_tensors
 
-    print("TRITON: ", triton_y)
-    print("PYTHON: ", python_y)
+        H = x.shape[-1]
+        n_rows = x.numel() // H  # Flatten other dimensions
+        x_reshaped = x.reshape(n_rows, H)
 
-    assert torch.allclose(triton_y, python_y), "Output mismatch"
+        partial_grad_weight = torch.empty_like(x_reshaped)
+        grad_x = torch.empty_like(x_reshaped)
+        rms_norm_backward[(n_rows, )](
+            grad_out, grad_x, partial_grad_weight,
+            x_reshaped, weight, x_reshaped.stride(0), H, 1e-5,
+            num_warps=16, BLOCK_SIZE=ctx.BLOCK_SIZE)
+        # print(partial_grad_weight)
+        return grad_x.view(x.shape), partial_grad_weight.sum(axis=0)
 
-if __name__ == "__main__":
-    os.environ["TRITON_INTERPRET"] = "1"
-    main()
