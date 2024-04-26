@@ -140,19 +140,18 @@ def rms_norm_backward(grad_output_ptr : tl.pointer_type,
     x_row = tl.load(x_ptr + row_idx * x_row_stride + offsets, mask=mask, other=0)
     gain_row = tl.load(weight_ptr + offsets, mask=mask, other=1)
 
-    squared_row =  x_row * x_row
-    squared_mean = tl.sum(squared_row) / H
-    rms = tl.sqrt(squared_mean + eps)
+    squared_row =  tl.sum(x_row * x_row)
+    rms = tl.sqrt(squared_row / H + eps)
 
     normalized_row = x_row / rms
-    grad_x_1 = (grad_output_row * gain_row) / rms
+    grad_x = (grad_output_row * gain_row) / rms
 
-    grad_x_2 = - x_row * tl.sum(grad_output_row * x_row * gain_row) / (rms * rms * rms * H)
-    grad_x_row = grad_x_1 + grad_x_2
-    tl.store(grad_x_ptr + row_idx * x_row_stride + offsets, grad_x_row, mask=mask)
+    grad_x += - x_row * tl.sum(grad_x * x_row) / (rms * rms * H)
+    tl.store(grad_x_ptr + row_idx * x_row_stride + offsets, grad_x, mask=mask)
 
     grad_gain_row = grad_output_row * normalized_row
     tl.store(partial_grad_weight_ptr + row_idx * x_row_stride + offsets, grad_gain_row, mask=mask)
+
 
 class RMS_Norm_Func_Triton(torch.autograd.Function):
     @staticmethod
