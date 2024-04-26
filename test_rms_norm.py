@@ -1,6 +1,8 @@
 import torch
 import timeit
 import cs336_basics.model.layers as layers
+import cs336_systems.layers as layers_systems
+from cs336_systems.kernels import RMS_Norm_Func_Triton
 
 def main():
     num_rows = 50000
@@ -16,6 +18,8 @@ def main():
 
         rmsnorm = layers.RMSNorm(last_dim).to("cuda")
         rmsnorm.weight.data = w
+        rms_triton = layers_systems.RMSNormTriton(last_dim).to("cuda")
+        rms_triton.weight.data = w
         layernorm = torch.nn.LayerNorm(last_dim).to("cuda")
         layernorm.weight.data = w
         layernorm.bias.data = bias
@@ -41,9 +45,23 @@ def main():
 
         layernorm_time = timeit.default_timer() - start_time
 
+        # Benchmark TritonNorm
+        start_time = timeit.default_timer()
+        for _ in range(num_forward_passes):
+            # Perform forward pass for LayerNorm
+            # Replace the following line with your implementation of LayerNorm forward pass
+            # output = rms_triton(x)
+            output = RMS_Norm_Func_Triton.apply(x, w)
+            torch.cuda.synchronize()
+
+        triton_time = timeit.default_timer() - start_time
+
+        print(RMS_Norm_Func_Triton.apply(x, w), rmsnorm(x))
+
         print(f"Last Dimension: {last_dim}")
         print(f"RMSNorm Time: {rmsnorm_time} seconds")
         print(f"LayerNorm Time: {layernorm_time} seconds")
+        print(f"Triton Time: {triton_time} seconds")
         print()
 
 if __name__ == "__main__":

@@ -98,20 +98,22 @@ def rms_norm_fwd(x_ptr : tl.pointer_type,
                      weight_ptr : tl.pointer_type,
                      x_row_stride : tl.uint32,
                      output_ptr : tl.pointer_type,
-                     H : tl.uint32,
+                     N : tl.uint32,
+                     eps: tl.float32,
                      BLOCK_SIZE: tl.constexpr):
     row_idx = tl.program_id(0)
     row_start_ptr = x_ptr + row_idx * x_row_stride
     offsets = tl.arange(0, BLOCK_SIZE)
-    mask = offsets < H
+    mask = offsets < N
 
     # Load input row and gain
     x_row = tl.load(row_start_ptr + offsets, mask=mask, other=0)
     gain = tl.load(weight_ptr + offsets, mask=mask, other=1)
 
     # Compute RMS
-    squared_sum = tl.sum(x_row ** 2, mask=mask)
-    rms = tl.sqrt(squared_sum / H)
+    squared_row =  x_row * x_row
+    squared_mean = tl.sum(squared_row) / N
+    rms = tl.sqrt(squared_mean + eps)
 
     # Normalize and apply gain
     normalized_row = x_row / rms
@@ -173,20 +175,25 @@ class RMS_Norm_Func_Triton(torch.autograd.Function):
         # need to compute the gradients wrt. x and weight.
         ctx.save_for_backward(x, weight)
 
-        H, output_dims = x.shape[-1], x.shape[:-1]
+        N = x.shape[-1]
+        n_rows = x.numel() // N  # Flatten other dimensions
+        x_reshaped = x.reshape(n_rows, N)
 
-        assert len(weight.shape) == 1 and weight.shape[0] == H, "Dimension mismatch"
+        assert len(weight.shape) == 1 and weight.shape[0] == N, "Dimension mismatch"
         assert x.is_cuda and weight.is_cuda, "Expected CUDA tensors"
         assert x.is_contiguous(), "Our pointer arithmetic will assume contiguous x"
 
-        ctx.BLOCK_SIZE = triton.next_power_of_2(H)
-        y = torch.empty(output_dims, device=x.device)
+        
+
+        ctx.BLOCK_SIZE = triton.next_power_of_2(N)
+
+        y_reshaped = torch.empty((n_rows, N), device=x.device)
 
         # Launch our kernel with n instances in our 1D grid.
-        n_rows = y.numel()
-        weighted_sum_fwd[(n_rows, )](
-            x, weight, x.stride(0), y, H,
+        rms_norm_fwd[(n_rows, )](
+            x, weight, x_reshaped.stride(0), y_reshaped, N, eps=1e-9,
             num_warps=16, BLOCK_SIZE=ctx.BLOCK_SIZE)
+        y = y_reshaped.view(x.shape)
         return y
 
     @staticmethod

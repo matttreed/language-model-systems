@@ -14,7 +14,7 @@ def main():
     parser.add_argument('--num_exp', type=int, default=5, help='Num Warmups')
     parser.add_argument('--forward_only', action='store_true', help='Only time forward pass')
     parser.add_argument('--mixed', action='store_true', help='Used Mixed Precision')
-    parser.add_argument('--use_layer_norm', action='store_true', help='Used Layer Norm instead of RMSNorm')
+    parser.add_argument('--norm_type', type=str, default="rms", help='"rms", "rms_triton", "layer"')
     args = parser.parse_args()
 
     # config = Systems_Config(version=args.version)
@@ -25,7 +25,7 @@ def main():
         profile_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only, use_mixed_precision=args.mixed)
 
     if args.benchmark:
-        benchmark_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only, use_mixed_precision=args.mixed, use_layer_norm=args.use_layer_norm)
+        benchmark_transformer(args.version, device, args.num_warmup, args.num_exp, args.forward_only, use_mixed_precision=args.mixed, norm_type=args.norm_type)
 
 
 if __name__ == "__main__":

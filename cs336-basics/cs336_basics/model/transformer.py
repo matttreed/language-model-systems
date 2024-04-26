@@ -2,10 +2,20 @@ import torch
 import torch.nn as nn
 
 from cs336_basics.model.layers import TransformerBlock, RMSNorm, RoPEEmbedding
+from cs336_systems.layers import RMSNormTriton
 
 class Transformer(nn.Module):
-    def __init__(self, vocab_size, context_length, num_layers, d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, use_layer_norm=False):
+    def __init__(self, vocab_size, context_length, num_layers, d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, norm_type="rms"):
         super(Transformer, self).__init__()
+
+
+        norm_function = RMSNorm
+
+        if norm_type == "layer":
+            norm_function == nn.LayerNorm
+        elif norm_type == "rms_triton":
+            norm_function == RMSNormTriton
+
         self.vocab_size = vocab_size
         self.context_length = context_length
         self.num_layers = num_layers
@@ -15,16 +25,16 @@ class Transformer(nn.Module):
         self.attn_pdrop = attn_pdrop
         self.residual_pdrop = residual_pdrop
         self.positional_embeddings = nn.Embedding(context_length, d_model)
-        self.use_layer_norm = use_layer_norm
+        self.norm_type = norm_type
 
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         self.blocks = nn.ModuleList(
             [
-                TransformerBlock(d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, use_layer_norm=use_layer_norm)
+                TransformerBlock(d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, norm_function)
                 for _ in range(num_layers)
             ]
         )
-        self.output_norm = RMSNorm(d_model) if not use_layer_norm else nn.LayerNorm(d_model)
+        self.output_norm = norm_function(d_model)
         self.output_proj = nn.Linear(d_model, vocab_size, bias=False)
         # self.softmax = nn.Softmax(dim=-1)
 
