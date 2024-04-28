@@ -1,5 +1,9 @@
 from cs336_basics.model.transformer import Transformer
+from cs336_basics.model.layers import RMSNorm
+from cs336_basics.model.util import crossEntropyLoss
+from cs336_basics.training.optimizer import AdamW
 from cs336_systems.config import Systems_Config
+from cs336_systems.layers import RMSNormTriton
 from cs336_systems.util import get_random_batch
 from torch.cuda.amp import autocast, GradScaler
 import torch
@@ -7,9 +11,18 @@ import time
 import timeit
 from contextlib import nullcontext
 
-def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool, use_mixed_precision: bool = False, norm_type: str = "rms"):
+def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool, use_mixed_precision: bool = False, norm_type: str = "rms", compiled=False):
 
     config = Systems_Config(version)
+
+    norm_function = None
+
+    if norm_type == "rms":
+        norm_function = RMSNorm
+    elif norm_type == "layer":
+        norm_function = torch.nn.LayerNorm
+    elif norm_type == "rms_triton":
+        norm_function = RMSNormTriton
     
     model = Transformer(
         vocab_size=config.vocab_size,
@@ -20,65 +33,48 @@ def benchmark_transformer(version, device, num_warmup: int, num_exp: int, forwar
         attn_pdrop=config.attn_pdrop,
         residual_pdrop=config.residual_pdrop,
         context_length=config.context_length,
-        norm_type=norm_type
+        norm_function=norm_function
     ).to(device)
+
+    if compiled:
+        print("Compiling Model")
+        model = torch.compile(model)
+        print("Done Compiling")
+
+    optimizer = AdamW(
+        params=model.parameters(),
+        lr=0.01
+    )
 
     context = torch.cuda.amp.autocast if use_mixed_precision else nullcontext
 
-    for _ in range(num_warmup):
-        x, _ = get_random_batch(config, device)
-        with context():
-            y = model(x)
+    times = []
 
-        if "cuda" in device.type:
-            torch.cuda.synchronize()
+    with context():
 
-    forward_times = []
-    backward_times = []
-    total_times = []
+        for i in range(num_exp + num_warmup):
 
-    for _ in range(num_exp):
-        x, _ = get_random_batch(config, device)
-        start = timeit.default_timer()
+            optimizer.zero_grad()
 
-        with context():
-            y = model(x)
+            x, y = get_random_batch(config, device)
+            start = timeit.default_timer()
 
+            y_hat = model(x)
 
-        if "cuda" in device.type:
-            torch.cuda.synchronize()
-        
-        end = timeit.default_timer()
-        forward_times.append(end - start)
+            if not forward_only:
+                loss = crossEntropyLoss(y, y_hat).mean()
+                loss.backward()
+                optimizer.step()
 
-        if not forward_only:
-            start = end
-            with context():
-                y.sum().backward()
-
-            if "cuda" in device.type:
-                torch.cuda.synchronize()
+                if "cuda" in device.type:
+                    torch.cuda.synchronize()
 
             end = timeit.default_timer()
-            backward_times.append(end - start)
 
-            total_times.append(forward_times[-1] + backward_times[-1])
-        else:
-            total_times.append(forward_times[-1])
+            if i >= num_warmup:
+                times.append(end-start)
 
-    if not forward_only:
-        print("Total Time:")
-        # print("Total Times:", total_times)
-        print(f"Average time: {sum(total_times) / len(total_times)}")
-        print(f"Standard deviation: {sum((t - sum(total_times) / len(total_times)) ** 2 for t in total_times) / len(total_times)}")
 
-    print("Forward Pass Time:")
-    # print("Forward Pass Times:", forward_times)
-    print(f"Average time: {sum(forward_times) / len(forward_times)}")
-    print(f"Standard deviation: {sum((t - sum(forward_times) / len(forward_times)) ** 2 for t in forward_times) / len(forward_times)}")
-
-    if not forward_only:
-        print("Backward Pass Time:")
-        # print("Backward Pass Times:", backward_times)
-        print(f"Average time: {sum(backward_times) / len(backward_times)}")
-        print(f"Standard deviation: {sum((t - sum(backward_times) / len(backward_times)) ** 2 for t in backward_times) / len(backward_times)}")
+    print(f"Average time: {sum(times) / len(times)}")
+    print(f"Standard deviation: {sum((t - sum(times) / len(times)) ** 2 for t in times) / len(times)}")
+    print("TIMES: ", times)

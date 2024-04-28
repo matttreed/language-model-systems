@@ -2,19 +2,10 @@ import torch
 import torch.nn as nn
 
 from cs336_basics.model.layers import TransformerBlock, RMSNorm, RoPEEmbedding
-from cs336_systems.layers import RMSNormTriton
 
 class Transformer(nn.Module):
-    def __init__(self, vocab_size, context_length, num_layers, d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, norm_type="rms"):
+    def __init__(self, vocab_size, context_length, num_layers, d_model, num_heads, d_ff, attn_pdrop, residual_pdrop, norm_function=RMSNorm):
         super(Transformer, self).__init__()
-
-
-        norm_function = RMSNorm
-
-        if norm_type == "layer":
-            norm_function == nn.LayerNorm
-        elif norm_type == "rms_triton":
-            norm_function == RMSNormTriton
 
         self.vocab_size = vocab_size
         self.context_length = context_length
@@ -25,7 +16,6 @@ class Transformer(nn.Module):
         self.attn_pdrop = attn_pdrop
         self.residual_pdrop = residual_pdrop
         self.positional_embeddings = nn.Embedding(context_length, d_model)
-        self.norm_type = norm_type
 
         self.token_embedding = nn.Embedding(vocab_size, d_model)
         self.blocks = nn.ModuleList(

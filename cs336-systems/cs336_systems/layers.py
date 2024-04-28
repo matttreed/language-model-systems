@@ -1,5 +1,5 @@
 import torch
-from cs336_systems.functions import RMS_Norm_Func_Python
+from cs336_systems.kernels import RMS_Norm_Func_Triton
 
 class RMSNormTriton(torch.nn.Module):
     def __init__(self, d_model):
@@ -8,4 +8,4 @@ class RMSNormTriton(torch.nn.Module):
         self.weight = torch.nn.Parameter(torch.ones(d_model)) # gain
 
     def forward(self, x):
-        return RMS_Norm_Func_Python.apply(x, self.weight)
+        return RMS_Norm_Func_Triton.apply(x, self.weight)

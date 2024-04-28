@@ -29,7 +29,7 @@ class SGD(torch.optim.Optimizer):
         return loss
 
 class AdamW(torch.optim.Optimizer):
-    def __init__(self, params, weight_decay, betas, eps, max_grad_norm=None, alpha_min=None, alpha_max=None, T_warmup=None, T_cosine=None, lr=None):
+    def __init__(self, params, weight_decay=.1, betas=[0.9,0.95], eps=1e-5, max_grad_norm=None, alpha_min=None, alpha_max=None, T_warmup=None, T_cosine=None, lr=None):
         self.alpha_min = alpha_min
         self.alpha_max = alpha_max
         self.T_warmup = T_warmup
