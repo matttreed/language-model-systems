@@ -18,27 +18,6 @@ import os
 def benchmark_memory(version, device, num_exp: int, forward_only: bool, use_mixed_precision: bool = False, norm_type: str = "rms", compiled=False):
 
     config = Systems_Config(version)
-    
-    model = Transformer(
-        vocab_size=config.vocab_size,
-        d_model=config.d_model,
-        num_heads=config.num_heads,
-        num_layers=config.num_layers,
-        d_ff=config.d_ff,
-        attn_pdrop=config.attn_pdrop,
-        residual_pdrop=config.residual_pdrop,
-        context_length=config.context_length
-    ).to(device)
-
-    if compiled:
-        print("Compiling Model")
-        model = torch.compile(model)
-        print("Done Compiling")
-
-    optimizer = AdamW(
-        params=model.parameters(),
-        lr=0.01
-    )
 
     context = torch.cuda.amp.autocast if use_mixed_precision else nullcontext
 
@@ -66,22 +45,54 @@ def benchmark_memory(version, device, num_exp: int, forward_only: bool, use_mixe
         profile_memory=True,
         with_stack=True,
     ) as prof:
+        model = Transformer(
+            vocab_size=config.vocab_size,
+            d_model=config.d_model,
+            num_heads=config.num_heads,
+            num_layers=config.num_layers,
+            d_ff=config.d_ff,
+            attn_pdrop=config.attn_pdrop,
+            residual_pdrop=config.residual_pdrop,
+            context_length=config.context_length
+        ).to(device)
+
+        if compiled:
+            print("Compiling Model")
+            model = torch.compile(model)
+            print("Done Compiling")
+
+        optimizer = None
+        
+        if not forward_only:
+            optimizer = AdamW(
+                params=model.parameters(),
+                lr=0.01
+            )
+            
         with context():
-            for _ in range(num_exp):
-                optimizer.zero_grad()
+            if forward_only:
+                with torch.no_grad():
+                    for _ in range(num_exp):
 
-                x, y = get_random_batch(config, device)
+                        x, y = get_random_batch(config, device)
 
-                y_hat = model(x)
+                        y_hat = model(x)
 
-                if not forward_only:
-                    loss = crossEntropyLoss(y, y_hat).mean()
-                    loss.backward()
-                    optimizer.step()
+                        prof.step()
+            else: 
+                for _ in range(num_exp):
+                    optimizer.zero_grad()
 
-                    # if "cuda" in device.type:
-                    #     torch.cuda.synchronize()
-                prof.step()
+                    x, y = get_random_batch(config, device)
+
+                    y_hat = model(x)
+
+                    if not forward_only:
+                        loss = crossEntropyLoss(y, y_hat).mean()
+                        loss.backward()
+                        optimizer.step()
+
+                    prof.step()
         # Save a graphical timeline of memory usage.
     prof.export_memory_timeline(html_export_path, device=device)
 
