@@ -1,0 +1,14 @@
+Testing All Reduce Single node with device cpu and backend gloo
+Time: 55.45459207892418, 2, cpu, gloo, 512KB
+Time: 54.289168655872345, 2, cpu, gloo, 1MB
+Time: 60.91651368141174, 2, cpu, gloo, 10MB
+Time: 94.89857292175293, 2, cpu, gloo, 50MB
+Time: 132.53391647338867, 2, cpu, gloo, 100MB
+Time: 449.4139099121094, 2, cpu, gloo, 500MB
+Time: 896.9914245605469, 2, cpu, gloo, 1GB
+Time: 70.27340871095657, 4, 512KB
+74.45123183727264, 4, 1MB
+63.2240629196167, 4, 10MB
+193.65677452087402, 4, 50MB
+338.9188003540039, 4, 100MB
+Caught signal, cleaning up...

@@ -1,0 +1,4 @@
+World_size: 2, Device: cpu, Backend: gloo, Size: 512KB, Time: 60.21647918224335
+World_size: 2, Device: cpu, Backend: gloo, Size: 1MB, Time: 54.71580931544304
+World_size: 2, Device: cpu, Backend: gloo, Size: 10MB, Time: 58.27059364318848
+Caught signal, cleaning up...

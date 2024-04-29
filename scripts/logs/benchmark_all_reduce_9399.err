@@ -1,0 +1,2 @@
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd-ad12a3ca-01: error: *** STEP 9399.0 ON ad12a3ca-01 CANCELLED AT 2024-04-29T13:10:07 ***

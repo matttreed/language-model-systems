@@ -1,0 +1,82 @@
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+    raise KeyError(key) from None
+KeyError: 'Slurm_PROCID'
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+    raise KeyError(key) from None
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+KeyError: 'Slurm_PROCID'
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+    raise KeyError(key) from None
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+KeyError: 'Slurm_PROCID'
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+    raise KeyError(key) from None
+KeyError: 'Slurm_PROCID'
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+    raise KeyError(key) from None
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+KeyError: 'Slurm_PROCID'
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+    raise KeyError(key) from None
+KeyError: 'Slurm_PROCID'
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+    raise KeyError(key) from None
+KeyError: 'Slurm_PROCID'
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 40, in <module>
+    multinode_distributed_demo()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 22, in multinode_distributed_demo
+    rank, world_size, local_rank, local_world_size = setup()
+  File "/home/c-mattreed/language-model-systems/multinode_distributed.py", line 7, in setup
+    rank = int(os.environ["Slurm_PROCID"])
+  File "/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/os.py", line 680, in __getitem__
+    raise KeyError(key) from None
+KeyError: 'Slurm_PROCID'
+srun: error: ad12a3ca-01: tasks 0-3: Exited with exit code 1
+srun: error: ad12a3ca-02: tasks 4-7: Exited with exit code 1

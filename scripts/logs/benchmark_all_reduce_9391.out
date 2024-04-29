@@ -1,0 +1,14 @@
+World_size: 2, Device: cpu, Backend: gloo, Size: 512KB, Time: 2.168608009815216
+World_size: 2, Device: cpu, Backend: gloo, Size: 1MB, Time: 4.7794079184532166
+World_size: 2, Device: cpu, Backend: gloo, Size: 10MB, Time: 14.249967813491821
+World_size: 2, Device: cpu, Backend: gloo, Size: 50MB, Time: 41.00641632080078
+World_size: 2, Device: cpu, Backend: gloo, Size: 100MB, Time: 89.80693054199219
+World_size: 2, Device: cpu, Backend: gloo, Size: 500MB, Time: 384.54864501953125
+World_size: 2, Device: cpu, Backend: gloo, Size: 1GB, Time: 839.8570556640625
+World_size: 2, Device: cuda, Backend: gloo, Size: 512KB, Time: 0.8059999942779541
+World_size: 2, Device: cuda, Backend: gloo, Size: 1MB, Time: 1.0643999576568604
+World_size: 2, Device: cuda, Backend: gloo, Size: 10MB, Time: 9.417439937591553
+World_size: 2, Device: cuda, Backend: gloo, Size: 50MB, Time: 37.6973762512207
+World_size: 2, Device: cuda, Backend: gloo, Size: 100MB, Time: 86.32897567749023
+World_size: 2, Device: cuda, Backend: gloo, Size: 500MB, Time: 438.11724853515625
+World_size: 2, Device: cuda, Backend: gloo, Size: 1GB, Time: 920.0624084472656

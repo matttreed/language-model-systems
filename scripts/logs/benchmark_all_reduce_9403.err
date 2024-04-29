@@ -1,0 +1,4 @@
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd-ad12a3ca-01: error: *** JOB 9403 ON ad12a3ca-01 CANCELLED AT 2024-04-29T13:19:25 DUE TO TIME LIMIT ***
+slurmstepd-ad12a3ca-01: error: *** STEP 9403.0 ON ad12a3ca-01 CANCELLED AT 2024-04-29T13:19:25 DUE TO TIME LIMIT ***
+Traceback (most recent call last):

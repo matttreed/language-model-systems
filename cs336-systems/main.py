@@ -12,7 +12,7 @@ def main():
     parser.add_argument('--benchmark', action='store_true', help='Benchmark Transformer')
     parser.add_argument('--memory', action='store_true', help='Benchmark Memory of Transformer')
     parser.add_argument('--profile', action='store_true', help='Profile Transformer')
-    parser.add_argument('--num_warmup', type=int, default=1, help='Num Warmups')
+    parser.add_argument('--num_warmup', type=int, default=5, help='Num Warmups')
     parser.add_argument('--num_exp', type=int, default=5, help='Num Warmups')
     parser.add_argument('--forward_only', action='store_true', help='Only time forward pass')
     parser.add_argument('--mixed', action='store_true', help='Used Mixed Precision')

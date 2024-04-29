@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/benchmark_all_reduce.py", line 77, in <module>
+    mp.spawn(fn=distributed_demo, args=(world_size, device, backend, tensor_len, size_name), nprocs=world_size, join=True)
+  File "/home/c-mattreed/miniconda3/envs/cs336_basics/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 241, in spawn
+    return start_processes(fn, args, nprocs, join, daemon, start_method="spawn")
+  File "/home/c-mattreed/miniconda3/envs/cs336_basics/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 197, in start_processes
+    while not context.join():
+  File "/home/c-mattreed/miniconda3/envs/cs336_basics/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 158, in join
+    raise ProcessRaisedException(msg, error_index, failed_process.pid)
+torch.multiprocessing.spawn.ProcessRaisedException: 
+
+-- Process 1 terminated with the following error:
+Traceback (most recent call last):
+  File "/home/c-mattreed/miniconda3/envs/cs336_basics/lib/python3.10/site-packages/torch/multiprocessing/spawn.py", line 68, in _wrap
+    fn(i, *args)
+  File "/home/c-mattreed/language-model-systems/benchmark_all_reduce.py", line 30, in distributed_demo
+    dist.all_reduce(data, async_op=False)
+  File "/home/c-mattreed/miniconda3/envs/cs336_basics/lib/python3.10/site-packages/torch/distributed/c10d_logger.py", line 72, in wrapper
+    return func(*args, **kwargs)
+  File "/home/c-mattreed/miniconda3/envs/cs336_basics/lib/python3.10/site-packages/torch/distributed/distributed_c10d.py", line 1992, in all_reduce
+    work = group.allreduce([tensor], opts)
+torch.distributed.DistBackendError: NCCL error in: ../torch/csrc/distributed/c10d/ProcessGroupNCCL.cpp:1691, invalid usage (run with NCCL_DEBUG=WARN for details), NCCL version 2.19.3
+ncclInvalidUsage: This usually reflects invalid usage of NCCL library.
+Last error:
+Duplicate GPU detected : rank 1 and rank 0 both on CUDA device 2d000
+
+srun: error: ad12a3ca-01: task 0: Exited with exit code 1
