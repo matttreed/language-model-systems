@@ -42,9 +42,16 @@ def benchmark_memory(version, device, num_exp: int, forward_only: bool, use_mixe
 
     context = torch.cuda.amp.autocast if use_mixed_precision else nullcontext
 
+    extra_info = ""
+    if forward_only:
+        extra_info += "_forward"
+    if use_mixed_precision:
+        extra_info += "_mixed"
+    extra_info += "_" + version
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    html_export_path = os.path.join(current_dir, 'benchmarking/timeline.html')
-    pickle_export_path = os.path.join(current_dir, 'benchmarking/memory_snapshot.pickle')
+    html_export_path = os.path.join(current_dir, f'benchmarking/timeline{extra_info}.html')
+    pickle_export_path = os.path.join(current_dir, f'benchmarking/memory_snapshot{extra_info}.pickle')
 
     torch.cuda.memory._record_memory_history(max_entries=1000000)
 
