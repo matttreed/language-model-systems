@@ -1,0 +1,8 @@
+/home/c-mattreed/miniconda3/envs/cs336_systems/bin/python: can't open file '/home/c-mattreed/language-model-systems/multinode_distributed.py': [Errno 2] No such file or directory
+/home/c-mattreed/miniconda3/envs/cs336_systems/bin/python: can't open file '/home/c-mattreed/language-model-systems/multinode_distributed.py': [Errno 2] No such file or directory
+/home/c-mattreed/miniconda3/envs/cs336_systems/bin/python: can't open file '/home/c-mattreed/language-model-systems/multinode_distributed.py': [Errno 2] No such file or directory
+/home/c-mattreed/miniconda3/envs/cs336_systems/bin/python: can't open file '/home/c-mattreed/language-model-systems/multinode_distributed.py': [Errno 2] No such file or directory
+srun: error: ad12a3ca-02: tasks 3-5: Exited with exit code 2
+/home/c-mattreed/miniconda3/envs/cs336_systems/bin/python: can't open file '/home/c-mattreed/language-model-systems/multinode_distributed.py': [Errno 2] No such file or directory
+/home/c-mattreed/miniconda3/envs/cs336_systems/bin/python: can't open file '/home/c-mattreed/language-model-systems/multinode_distributed.py': [Errno 2] No such file or directory
+srun: error: ad12a3ca-01: tasks 0-2: Exited with exit code 2

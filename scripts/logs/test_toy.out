@@ -1,0 +1,28 @@
+MASTER_PORT: 19666
+MASTER_ADDR: ad12a3ca-01
+Batch 0
+Batch 1
+Batch 2
+Batch 3
+Batch 4
+Batch 5
+Batch 6
+Batch 7
+Batch 8
+Batch 9
+Batch 10
+Batch 11
+Batch 12
+Batch 13
+Batch 14
+Batch 15
+Checking Correctness
+L1 Norm of Difference: 0.00015081529272720218
+L2 Norm of Difference: 2.165165597034502e-06
+Max Difference: 4.209578037261963e-07
+Number of Significant Differences: 0/16384
+L1 Norm of Difference: 1.3076351024210453e-06
+L2 Norm of Difference: 1.454019127322681e-07
+Max Difference: 3.725290298461914e-08
+Number of Significant Differences: 0/128
+Success
