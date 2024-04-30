@@ -119,8 +119,6 @@ def _test_rmsnorm_forward_backward(f, device):
     y = f(x, g)
     y.backward(dy)
 
-    print(g_grad_ref, g.grad)
-
     assert torch.allclose(y, y_ref, rtol=1e-4, atol=1e-5), (y, y_ref)
     assert torch.allclose(x.grad, x_grad_ref, rtol=1e-4, atol=1e-5), (
         x.grad,
