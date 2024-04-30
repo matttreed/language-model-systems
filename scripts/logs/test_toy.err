@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/cs336-systems/cs336_systems/train_naive.py", line 107, in <module>
+    train_model("5.0")
+  File "/home/c-mattreed/language-model-systems/cs336-systems/cs336_systems/train_naive.py", line 39, in train_model
+    model.train()
+UnboundLocalError: local variable 'model' referenced before assignment
+Traceback (most recent call last):
+  File "/home/c-mattreed/language-model-systems/cs336-systems/cs336_systems/train_naive.py", line 107, in <module>
+    train_model("5.0")
+  File "/home/c-mattreed/language-model-systems/cs336-systems/cs336_systems/train_naive.py", line 39, in train_model
+    model.train()
+UnboundLocalError: local variable 'model' referenced before assignment
+srun: error: ad12a3ca-02: task 0: Exited with exit code 1
+srun: error: ad12a3ca-02: task 1: Exited with exit code 1

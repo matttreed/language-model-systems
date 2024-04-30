@@ -11,8 +11,8 @@ import numpy as np
 import torch.nn as nn
 from copy import deepcopy
 
-BACKEND = "gloo"
-DEVICE = "cpu"
+BACKEND = "nccl"
+DEVICE = "cuda"
 BATCH_SIZE = 24
 NUM_BATCHES = 16
 D_MODEL = 128
@@ -21,8 +21,8 @@ SEED = 12345
 class ToyModel(nn.Module):
     def __init__(self, d_model):
         super(ToyModel, self).__init__()
-        self.lin1 = nn.Linear(d_model, d_model, bias=False)
-        self.lin2 = nn.Linear(d_model, 1, bias=False)
+        self.lin1 = nn.Linear(d_model, 4 * d_model, bias=False)
+        self.lin2 = nn.Linear(4 * d_model, 1, bias=False)
 
     def forward(self, x):
         x = self.lin1(x)
