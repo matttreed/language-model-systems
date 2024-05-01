@@ -24,32 +24,28 @@ class DDP_Individual_Parameters(torch.nn.Module):
         self.rank = dist.get_rank()
         self.world_size = dist.get_world_size()
 
-        for param in self.module.parameters():
-            dist.broadcast(param.data, src=0)
-
         self.handles = []
+
+        def register_post_accumulate_grad_hook(param):
+            grad = param.grad
+            if grad is not None:
+                grad /= self.world_size
+                handle = dist.all_reduce(grad, op=torch.distributed.ReduceOp.SUM, async_op=True)
+                self.handles.append(handle)
+                
+
+        for param in self.module.parameters():
+            if param.requires_grad:
+                param.register_post_accumulate_grad_hook(register_post_accumulate_grad_hook)
+            dist.broadcast(param.data, src=0)
     
     def forward(self, *inputs, **kwargs):
-
         y = self.module(*inputs, **kwargs)
         return y
 
     def finish_gradient_synchronization(self):
-        # for param in self.module.parameters():
-        #     if param.requires_grad:
-        #         handle = dist.all_reduce(param.grad.data, async_op=True)
-        #         self.handles.append(handle)
 
-        # for handle in self.handles:
-        #     handle.wait()
-        #     self.handles.clear()
-
-        # for param in self.module.parameters():
-        #     if param.requires_grad:
-        #         param.grad.data /= self.world_size
-
-        for param in self.module.parameters():
-            if param.requires_grad:
-                dist.all_reduce(param.grad.data, async_op=False)
-                param.grad.data /= self.world_size
+        for handle in self.handles:
+            handle.wait()
+        self.handles.clear()
 
