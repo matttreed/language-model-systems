@@ -35,12 +35,21 @@ class DDP_Individual_Parameters(torch.nn.Module):
         return y
 
     def finish_gradient_synchronization(self):
+        # for param in self.module.parameters():
+        #     if param.requires_grad:
+        #         handle = dist.all_reduce(param.grad.data, async_op=True)
+        #         self.handles.append(handle)
+
+        # for handle in self.handles:
+        #     handle.wait()
+        #     self.handles.clear()
+
+        # for param in self.module.parameters():
+        #     if param.requires_grad:
+        #         param.grad.data /= self.world_size
+
         for param in self.module.parameters():
-            if param.requires_grad and param.grad is not None:
-                handle = dist.all_reduce(param.grad.data, async_op=True)
-                self.handles.append(handle)
+            if param.requires_grad:
+                dist.all_reduce(param.grad.data, async_op=False)
+                param.grad.data /= self.world_size
 
-        for handle in self.handles:
-            handle.wait()
-
-        self.handles.clear()
