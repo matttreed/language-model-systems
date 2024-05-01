@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import Type
 from cs336_systems.kernels import RMS_Norm_Func_Triton
 from cs336_systems.functions import RMS_Norm_Func_Python, rmsnorm_jvp_g, rmsnorm_jvp_x
-from cs336_systems.ddp import DDP_Individual_Parameters
+from cs336_systems.ddp import DDP_Individual_Parameters, DDP_Bucketed
 
 import torch
 
@@ -136,7 +136,7 @@ def get_ddp_bucketed(module: torch.nn.Module, bucket_size_mb: float) -> torch.nn
     Returns:
         Instance of a DDP class.
     """
-    raise NotImplementedError
+    return DDP_Bucketed(module, bucket_size_mb=bucket_size_mb)
 
 
 def ddp_bucketed_on_after_backward(
@@ -153,7 +153,7 @@ def ddp_bucketed_on_after_backward(
             Optimizer being used with the DDP-wrapped model.
     """
     # For example: ddp_model.finish_gradient_synchronization()
-    raise NotImplementedError
+    ddp_model.finish_gradient_synchronization()
 
 
 def ddp_bucketed_on_train_batch_start(
@@ -168,7 +168,6 @@ def ddp_bucketed_on_train_batch_start(
         optimizer: torch.optim.Optimizer
             Optimizer being used with the DDP-wrapped model.
     """
-    raise NotImplementedError
 
 
 def get_sharded_optimizer(
