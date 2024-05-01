@@ -74,6 +74,18 @@ def train_model(version: str, type: str, world_size):
     all_reduce_time = []
     optimizer_step_time = []
 
+    for i in range(5):
+        optimizer.zero_grad()
+        x = torch.randint(0, config.vocab_size - 1, (MINI_BATCH_SIZE, config.context_length), device=DEVICE) # NOTE THIS IS NOT ACCURATE SINCE NOT SHARING DATA
+        y = torch.randint(0, config.vocab_size - 1, (MINI_BATCH_SIZE, config.context_length), device=DEVICE)
+
+        y_hat = model(x)
+        loss = crossEntropyLoss(y, y_hat).mean()
+        loss.backward()
+
+        model.finish_gradient_synchronization()
+        optimizer.step()
+
     with profile(
         activities=[
             torch.profiler.ProfilerActivity.CPU,

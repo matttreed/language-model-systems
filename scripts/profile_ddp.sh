@@ -2,11 +2,11 @@
 #SBATCH --job-name=test_training
 #SBATCH --partition=a2
 #SBATCH --cpus-per-task=3
-#SBATCH --ntasks-per-node=1
+#SBATCH --ntasks-per-node=2
 #SBATCH --nodes=2
 #SBATCH --mem=20G
 #SBATCH --time=00:02:00
-#SBATCH --gpus-per-node=1
+#SBATCH --gpus-per-node=2
 #SBATCH --error=scripts/logs/profile_ddp.err
 #SBATCH --output=scripts/logs/profile_ddp.out
 
