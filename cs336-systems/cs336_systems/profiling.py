@@ -5,11 +5,13 @@ from cs336_systems.config import Systems_Config
 from torch.profiler import profile, record_function, ProfilerActivity
 from cs336_systems.util import get_random_batch
 from contextlib import nullcontext
+from cs336_systems.ddp import DDP_Bucketed, DDP_Individual_Parameters, DDP_Naive
+
 import torch
 import time
 import os
 
-def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool, use_mixed_precision: bool = False):
+def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_only: bool, use_mixed_precision: bool = False, wrapper=None):
 
     config = Systems_Config(version)
     
@@ -30,6 +32,13 @@ def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_
         weight_decay=config.weight_decay,
         eps=config.eps,
         lr=config.lr)
+    
+    # if wrapper == "naive":
+    #     model = DDP_Naive(model)
+    # elif wrapper == "indiv":
+    #     model = DDP_Individual_Parameters(model)
+    # elif wrapper == "bucket":
+    #     model = DDP_Bucketed(model, bucket_size_mb=12)
     
     context = torch.cuda.amp.autocast if use_mixed_precision else nullcontext
     scaler = torch.cuda.amp.GradScaler() if use_mixed_precision else None
@@ -69,6 +78,9 @@ def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_
                     else:
                         loss.backward()
 
+                    # if model.finish_gradient_synchronization:
+                    #     model.finish_gradient_synchronization()
+
                 with record_function('optimizer') and context():
                     if use_mixed_precision:
                         scaler.step(optimizer)
@@ -82,7 +94,9 @@ def profile_transformer(version, device, num_warmup: int, num_exp: int, forward_
             prof.step()
 
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    export_path = os.path.join(current_dir, f'stacks/lm_profiler_stacks_{version}.txt')
+    stacks_export_path = os.path.join(current_dir, f'stacks/lm_profiler_stacks_{version}.txt')
+    chrome_export_path = os.path.join(current_dir, f'stacks/lm_profiler_chrome_{version}.txt')
 
-    prof.export_stacks(export_path, "self_cuda_time_total")
+    prof.export_stacks(stacks_export_path, "self_cuda_time_total")
+    prof.export_chrome_trace(chrome_export_path)
     print(prof.key_averages().table(sort_by="cuda_time_total", row_limit=1000))

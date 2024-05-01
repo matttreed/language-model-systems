@@ -5,6 +5,7 @@ from typing import Type
 from cs336_systems.kernels import RMS_Norm_Func_Triton
 from cs336_systems.functions import RMS_Norm_Func_Python, rmsnorm_jvp_g, rmsnorm_jvp_x
 from cs336_systems.ddp import DDP_Individual_Parameters, DDP_Bucketed
+from cs336_systems.sharded_optim import Sharded_Optimizer
 
 import torch
 
@@ -188,4 +189,4 @@ def get_sharded_optimizer(
     Returns:
         Instance of sharded optimizer.
     """
-    raise NotImplementedError
+    return Sharded_Optimizer(params=params, optimizer_cls=optimizer_cls, **kwargs)

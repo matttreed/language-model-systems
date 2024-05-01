@@ -1,0 +1,6 @@
+STAGE:2024-05-01 15:41:49 3995681:3995681 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
+STAGE:2024-05-01 15:41:49 3588948:3588948 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
+STAGE:2024-05-01 15:41:50 3995681:3995681 ActivityProfilerController.cpp:320] Completed Stage: Collection
+STAGE:2024-05-01 15:41:50 3588948:3588948 ActivityProfilerController.cpp:320] Completed Stage: Collection
+STAGE:2024-05-01 15:41:50 3995681:3995681 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
+STAGE:2024-05-01 15:41:50 3588948:3588948 ActivityProfilerController.cpp:324] Completed Stage: Post Processing

@@ -12,6 +12,33 @@ import numpy as np
 import torch.nn as nn
 from copy import deepcopy
 
+class DDP_Naive(torch.nn.Module):
+    def __init__(self, module: torch.nn.Module) -> None:
+        super(DDP_Naive, self).__init__()
+
+        if not dist.is_initialized():
+            raise RuntimeError("Distributed package is not initialized")
+
+        self.module = module
+
+        self.rank = dist.get_rank()
+        self.world_size = dist.get_world_size()
+                
+
+        for param in self.module.parameters():
+            dist.broadcast(param.data, src=0)
+    
+    def forward(self, *inputs, **kwargs):
+        y = self.module(*inputs, **kwargs)
+        return y
+
+    def finish_gradient_synchronization(self):
+        for param in self.module.parameters():
+            if param.requires_grad:
+                param.grad.data /= self.world_size
+                dist.all_reduce(param.grad.data, op=torch.distributed.ReduceOp.SUM, async_op=False)
+
+
 class DDP_Individual_Parameters(torch.nn.Module):
     def __init__(self, module: torch.nn.Module) -> None:
         super(DDP_Individual_Parameters, self).__init__()
