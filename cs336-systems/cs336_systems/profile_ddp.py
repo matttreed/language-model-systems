@@ -110,13 +110,13 @@ def train_model(version: str, type: str, world_size):
 
             prof.step()
 
-    if dist.get_rank() == 0:
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        # stacks_export_path = os.path.join(current_dir, f'stacks/lm_profiler_stacks_{version}.txt')
-        chrome_export_path = os.path.join(current_dir, f'stacks/lm_profiler_chrome_{version}_{type}.txt')
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    # stacks_export_path = os.path.join(current_dir, f'stacks/lm_profiler_stacks_{version}.txt')
+    rank = dist.get_rank()
+    chrome_export_path = os.path.join(current_dir, f'traces/{type}/lm_profiler_chrome_{version}_{rank}.json')
 
-        # prof.export_stacks(stacks_export_path, "self_cuda_time_total")
-        prof.export_chrome_trace(chrome_export_path)
+    # prof.export_stacks(stacks_export_path, "self_cuda_time_total")
+    prof.export_chrome_trace(chrome_export_path)
 
 
 def main():
