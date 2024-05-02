@@ -1,12 +1,12 @@
-STAGE:2024-05-01 18:29:28 3730372:3730372 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
-STAGE:2024-05-01 18:29:28 4023920:4023920 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
-STAGE:2024-05-01 18:29:28 4023921:4023921 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
-STAGE:2024-05-01 18:29:28 3730373:3730373 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
-STAGE:2024-05-01 18:29:28 4023921:4023921 ActivityProfilerController.cpp:320] Completed Stage: Collection
-STAGE:2024-05-01 18:29:28 4023920:4023920 ActivityProfilerController.cpp:320] Completed Stage: Collection
-STAGE:2024-05-01 18:29:28 3730372:3730372 ActivityProfilerController.cpp:320] Completed Stage: Collection
-STAGE:2024-05-01 18:29:28 3730373:3730373 ActivityProfilerController.cpp:320] Completed Stage: Collection
-STAGE:2024-05-01 18:29:28 4023921:4023921 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
-STAGE:2024-05-01 18:29:28 4023920:4023920 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
-STAGE:2024-05-01 18:29:28 3730372:3730372 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
-STAGE:2024-05-01 18:29:28 3730373:3730373 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
+/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/site-packages/torch/profiler/profiler.py:354: UserWarning: Profiler won't be using warmup, this can skew profiler results
+  warn("Profiler won't be using warmup, this can skew profiler results")
+/home/c-mattreed/miniconda3/envs/cs336_systems/lib/python3.10/site-packages/torch/profiler/profiler.py:354: UserWarning: Profiler won't be using warmup, this can skew profiler results
+  warn("Profiler won't be using warmup, this can skew profiler results")
+STAGE:2024-05-01 22:31:44 4084273:4084273 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
+STAGE:2024-05-01 22:31:44 3845031:3845031 ActivityProfilerController.cpp:314] Completed Stage: Warm Up
+STAGE:2024-05-01 22:31:58 4084273:4084273 ActivityProfilerController.cpp:320] Completed Stage: Collection
+STAGE:2024-05-01 22:31:58 3845031:3845031 ActivityProfilerController.cpp:320] Completed Stage: Collection
+STAGE:2024-05-01 22:31:59 4084273:4084273 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
+STAGE:2024-05-01 22:31:59 3845031:3845031 ActivityProfilerController.cpp:324] Completed Stage: Post Processing
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd-ad12a3ca-01: error: *** STEP 12532.0 ON ad12a3ca-01 CANCELLED AT 2024-05-01T22:34:01 DUE TO TIME LIMIT ***

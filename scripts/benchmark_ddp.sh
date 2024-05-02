@@ -5,7 +5,7 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --nodes=2
 #SBATCH --mem=20G
-#SBATCH --time=00:02:00
+#SBATCH --time=00:04:00
 #SBATCH --gpus-per-node=1
 #SBATCH --error=scripts/logs/time_ddp.err
 #SBATCH --output=scripts/logs/woah.out
@@ -23,4 +23,4 @@ export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
 # echo "MASTER_PORT: ${MASTER_PORT}"
 # echo "MASTER_ADDR: ${MASTER_ADDR}"
 
-srun python cs336-systems/cs336_systems/time_ddp.py --version $2 --type $1
+srun python cs336-systems/cs336_systems/time_ddp.py --type $1 --version $2

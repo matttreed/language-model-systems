@@ -2,6 +2,7 @@ from cs336_basics.configs.config import Config
 from cs336_basics.model.transformer import Transformer
 from cs336_basics.training.optimizer import AdamW
 from cs336_basics.model.util import crossEntropyLoss, load_model, save_model, get_batch, log_validation_loss, log, build_model
+from cs336_systems.sharded_optim import Sharded_Optimizer
 from cs336_systems.config import Systems_Config
 from cs336_systems.ddp import DDP_Bucketed, DDP_Individual_Parameters, DDP_Naive
 import torch
@@ -15,7 +16,7 @@ import argparse
 SEED = 32
 BACKEND = "nccl"
 DEVICE = "cuda"
-NUM_EXP = 20
+NUM_EXP = 10
 
 def setup():
     torch.manual_seed(SEED)
@@ -35,7 +36,7 @@ def setup():
     return rank, world_size, local_rank, local_world_size
 
 
-def train_model(version: str, type: str, world_size):
+def train_model(version: str, type: str, world_size, max_mb, sharded):
 
     config = Systems_Config(version)
     config.batch_size = 12
@@ -53,17 +54,26 @@ def train_model(version: str, type: str, world_size):
 
     model.train()
 
-    optimizer = AdamW(
+    optimizer = None
+
+    if sharded:
+        optimizer = Sharded_Optimizer(
         params=model.parameters(),
+        optimizer_cls=AdamW,
         lr=0.01
-    )
+        )
+    else:
+        optimizer = AdamW(
+            params=model.parameters(),
+            lr=0.01
+        )
 
     if type == "naive":
         model = DDP_Naive(model)
     elif type == "indiv":
         model = DDP_Individual_Parameters(model)
     elif type == "bucket":
-        model = DDP_Bucketed(model, bucket_size_mb=12)
+        model = DDP_Bucketed(model, bucket_size_mb=max_mb)
 
     MINI_BATCH_SIZE = config.batch_size // world_size
 
@@ -107,13 +117,15 @@ def train_model(version: str, type: str, world_size):
         # print("FORward:", sum(forward_time)/len(forward_time))
         # print("all reduce: ", sum(all_reduce_time)/len(all_reduce_time))
         # print("optimizer: ", sum(optimizer_step_time)/len(optimizer_step_time))
-        print(type, version, t, f,ar,b)
+        print(type, version, max_mb, t, f,ar,b)
 
 
 def main():
     parser = argparse.ArgumentParser(description='Train a model with float16 parameters.')
     parser.add_argument('--version', type=str, default=None, help='Version Number of Model')
     parser.add_argument('--type', type=str, default=None, help='Version Number of Model')
+    parser.add_argument('--max', type=int, default=None, help='Version Number of Model')
+    parser.add_argument('--sharded', action="store_true", help='Version Number of Model')
     args = parser.parse_args()
 
     rank, world_size, local_rank, local_world_size = setup()
@@ -125,7 +137,7 @@ def main():
         versions = [args.version]
 
     for version in versions:
-        train_model(version, args.type, world_size)
+        train_model(version, args.type, world_size, args.max, args.sharded)
 
 if __name__ == "__main__":
     main()
